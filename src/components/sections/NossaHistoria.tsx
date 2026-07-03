@@ -8,15 +8,15 @@ export function NossaHistoria() {
   return (
     <section id="historia" className="py-20 sm:py-28 bg-[#FFFDF9] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* Image Column */}
           <div className="lg:col-span-5 relative flex justify-center">
             <Reveal>
               <div className="relative w-full max-w-md h-[360px] sm:h-[420px] rounded-3xl overflow-hidden border-4 border-white shadow-xl group">
                 <Image
-                  src="/images/pizza2.png"
+                  src="/images/pizza25.png"
                   alt="Massa Artesanal Pizzaria 3 Irmãos"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
