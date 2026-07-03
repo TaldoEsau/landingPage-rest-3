@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { restaurantInfo } from "@/data/restaurantInfo";
 import { Reveal } from "@/components/ui/Reveal";
+import { GooglePlaceDetails } from "@/types/landing";
 import {
   ArrowUpRight,
   Clock,
@@ -44,6 +45,18 @@ const heroPreviewItems = [
 
 export function Hero() {
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [placeData, setPlaceData] = useState<GooglePlaceDetails | null>(null);
+
+  useEffect(() => {
+    fetch("/api/google-reviews")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setPlaceData(json.data);
+        }
+      })
+      .catch((err) => console.warn("Erro ao carregar avaliações do Google no Hero:", err));
+  }, []);
 
   const nextCard = () => {
     setActiveCardIndex((prev) => (prev + 1) % heroPreviewItems.length);
@@ -57,9 +70,21 @@ export function Hero() {
 
   const currentItem = heroPreviewItems[activeCardIndex];
 
+  const ratingFormatted = placeData ? placeData.rating.toFixed(1).replace(".", ",") : "4,9";
+  const userRatingsTotal = placeData ? placeData.user_ratings_total : 742;
+  const mapsUrl = placeData?.url || restaurantInfo.googleMapsUrl;
+
+  // Extract top reviewer avatars from dynamic Google Place data if available
+  const topReviews = placeData?.reviews || [];
+  const sampleAvatars = [
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
+  ];
+
   return (
     <section className="relative pt-28 pb-20 lg:pt-36 lg:pb-32 bg-[#0D0D12] text-white overflow-hidden selection:bg-[#E63946] selection:text-white">
-      
+
       {/* Fiery & Warm Ambient Background Glows */}
       <div className="absolute top-1/4 right-10 w-[500px] h-[500px] bg-[#E63946]/20 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-[#F4A261]/15 rounded-full blur-[120px] pointer-events-none" />
@@ -70,11 +95,11 @@ export function Hero() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* LEFT COLUMN: Bold Typography & Action Controls */}
           <div className="lg:col-span-6 space-y-6 text-left">
-            
-            {/* Green Organic Badge (Matching Reference) */}
+
+            {/* Green Organic Badge */}
             <Reveal delay={0.1}>
               <div className="inline-flex items-center gap-2 bg-[#2A9D8F]/20 border border-[#2A9D8F]/40 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-[#2A9D8F]">
                 <div className="w-5 h-5 rounded-full bg-[#2A9D8F] flex items-center justify-center text-[#0D0D12]">
@@ -84,7 +109,7 @@ export function Hero() {
               </div>
             </Reveal>
 
-            {/* Massive Bold Headline (Reference UberEats Typography Style) */}
+            {/* Massive Bold Headline */}
             <Reveal delay={0.2}>
               <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.98] text-white">
                 O SABOR DA <br />
@@ -102,7 +127,7 @@ export function Hero() {
               </p>
             </Reveal>
 
-            {/* Pill Action Buttons (Matching Reference Design) */}
+            {/* Pill Action Buttons */}
             <Reveal delay={0.4}>
               <div className="flex flex-wrap items-center gap-4 pt-3">
                 <a
@@ -127,32 +152,29 @@ export function Hero() {
               </div>
             </Reveal>
 
-            {/* Social Proof & Google Ratings Row (Bottom Left - Reference Style) */}
+            {/* Social Proof & Dynamic Google Ratings Row */}
             <Reveal delay={0.5}>
               <div className="pt-6 border-t border-white/10 flex items-center gap-5">
                 {/* Avatar Stack */}
                 <div className="flex -space-x-3 overflow-hidden">
-                  <img
-                    className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0D0D12] object-cover"
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                    alt="Cliente Pizzaria 3 Irmãos"
-                  />
-                  <img
-                    className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0D0D12] object-cover"
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                    alt="Cliente Pizzaria 3 Irmãos"
-                  />
-                  <img
-                    className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0D0D12] object-cover"
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80"
-                    alt="Cliente Pizzaria 3 Irmãos"
-                  />
+                  {sampleAvatars.map((src, idx) => {
+                    const rev = topReviews[idx];
+                    const photo = rev?.profile_photo_url || src;
+                    return (
+                      <img
+                        key={idx}
+                        className="inline-block h-10 w-10 rounded-full ring-2 ring-[#0D0D12] object-cover"
+                        src={photo}
+                        alt={rev?.author_name || "Cliente Pizzaria 3 Irmãos"}
+                      />
+                    );
+                  })}
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E63946] ring-2 ring-[#0D0D12] text-[11px] font-bold text-white">
-                    +50k
+                    +{userRatingsTotal}
                   </div>
                 </div>
 
-                {/* Rating Stars & Count */}
+                {/* Dynamic Rating Stars & Count */}
                 <div>
                   <div className="flex items-center gap-1 text-[#F4A261] text-xs font-bold">
                     <Star className="w-4 h-4 fill-[#F4A261]" />
@@ -161,9 +183,14 @@ export function Hero() {
                     <Star className="w-4 h-4 fill-[#F4A261]" />
                     <Star className="w-4 h-4 fill-[#F4A261]" />
                   </div>
-                  <p className="text-xs text-gray-300 font-medium mt-0.5">
-                    <span className="font-bold text-white">4.9</span> (740+ avaliações no Google)
-                  </p>
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-gray-300 font-medium mt-0.5 hover:text-[#F4A261] transition-colors block"
+                  >
+                    <span className="font-bold text-white">{ratingFormatted}</span> ({userRatingsTotal} avaliações no Google)
+                  </a>
                 </div>
               </div>
             </Reveal>
@@ -172,8 +199,8 @@ export function Hero() {
 
           {/* RIGHT COLUMN: Giant Transparent Pizza & Floating Preview Cards */}
           <div className="lg:col-span-6 relative flex flex-col items-center justify-center pt-6 lg:pt-0">
-            
-            {/* Delivery Time Floating Glass Badge (Top Right - Reference Style) */}
+
+            {/* Delivery Time Floating Glass Badge */}
             <div className="absolute top-0 right-4 z-20 bg-[#1A1A24]/90 backdrop-blur-xl p-4 rounded-2xl border border-white/15 shadow-2xl flex items-center gap-3.5 animate-bounce duration-1000">
               <div className="w-10 h-10 rounded-xl bg-[#E63946]/20 flex items-center justify-center text-[#E63946] shrink-0">
                 <Clock className="w-5 h-5" />
@@ -188,7 +215,7 @@ export function Hero() {
             <div className="relative w-80 h-80 sm:w-[420px] sm:h-[420px] lg:w-[480px] lg:h-[480px] my-4 group">
               {/* Backlight Glow Circle */}
               <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-[#E63946]/30 to-[#F4A261]/20 blur-2xl animate-pulse" />
-              
+
               <Image
                 src={currentItem.image}
                 alt="Pizza Artesanal Transparent 3 Irmãos"
@@ -204,14 +231,14 @@ export function Hero() {
               </div>
             </div>
 
-            {/* Bottom Floating Food Preview Cards Carousel (Matching Reference Screenshot Cards) */}
+            {/* Bottom Floating Food Preview Cards Carousel */}
             <div className="w-full max-w-lg mt-2 relative z-20">
-              
+
               <div className="flex items-center justify-between gap-3 mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-widest text-gray-400">
                   Destaques da Cozinha
                 </span>
-                
+
                 {/* Carousel Controls */}
                 <div className="flex items-center gap-1">
                   <button
@@ -239,11 +266,10 @@ export function Hero() {
                     <div
                       key={item.id}
                       onClick={() => setActiveCardIndex(idx)}
-                      className={`cursor-pointer rounded-2xl p-3.5 transition-all duration-300 flex flex-col justify-between ${
-                        isSelected
+                      className={`cursor-pointer rounded-2xl p-3.5 transition-all duration-300 flex flex-col justify-between ${isSelected
                           ? "bg-gradient-to-br from-[#E63946] to-[#d62839] text-white shadow-xl scale-105 border border-[#F4A261]/50"
                           : "bg-[#1A1A24]/90 text-gray-300 hover:bg-[#222230] border border-white/10"
-                      }`}
+                        }`}
                     >
                       <div>
                         <div className="relative w-14 h-14 mx-auto mb-2">
@@ -269,11 +295,10 @@ export function Hero() {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                            isSelected
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isSelected
                               ? "bg-white text-[#E63946]"
                               : "bg-white/10 text-white hover:bg-[#E63946]"
-                          }`}
+                            }`}
                         >
                           <ShoppingBag className="w-3 h-3" />
                         </a>

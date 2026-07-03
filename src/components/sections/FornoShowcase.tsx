@@ -227,27 +227,40 @@ export function FornoShowcase() {
 
           {/* Animated Ember Particles */}
           <motion.div style={{ opacity: embersOpacity }} className="absolute inset-0 pointer-events-none z-10">
-            {[...Array(16)].map((_, i) => (
+            {[
+              { left: "28%", top: "32%", size: 3, color: "#E63946", yDist: -80, xDist: 15, duration: 2.4, delay: 0.2 },
+              { left: "42%", top: "50%", size: 2, color: "#F4A261", yDist: -110, xDist: -20, duration: 3.1, delay: 0.8 },
+              { left: "60%", top: "38%", size: 4, color: "#FFD700", yDist: -70, xDist: 25, duration: 2.1, delay: 0.4 },
+              { left: "35%", top: "55%", size: 2, color: "#E63946", yDist: -95, xDist: -15, duration: 2.8, delay: 1.2 },
+              { left: "52%", top: "28%", size: 3, color: "#F4A261", yDist: -120, xDist: 10, duration: 3.4, delay: 0.1 },
+              { left: "68%", top: "45%", size: 2, color: "#FFD700", yDist: -85, xDist: -30, duration: 2.6, delay: 1.5 },
+              { left: "30%", top: "62%", size: 4, color: "#E63946", yDist: -65, xDist: 20, duration: 2.3, delay: 0.6 },
+              { left: "48%", top: "40%", size: 2, color: "#F4A261", yDist: -105, xDist: -10, duration: 3.0, delay: 1.0 },
+              { left: "62%", top: "52%", size: 3, color: "#FFD700", yDist: -90, xDist: 18, duration: 2.5, delay: 0.3 },
+              { left: "38%", top: "35%", size: 2, color: "#E63946", yDist: -115, xDist: -22, duration: 3.2, delay: 1.7 },
+              { left: "55%", top: "65%", size: 4, color: "#F4A261", yDist: -75, xDist: 12, duration: 2.2, delay: 0.9 },
+              { left: "45%", top: "48%", size: 3, color: "#FFD700", yDist: -100, xDist: -18, duration: 2.9, delay: 1.4 },
+            ].map((ember, i) => (
               <motion.div
                 key={i}
                 className="absolute rounded-full"
                 style={{
-                  left: `${25 + Math.random() * 50}%`,
-                  top: `${25 + Math.random() * 45}%`,
-                  width: `${1.5 + Math.random() * 2.5}px`,
-                  height: `${1.5 + Math.random() * 2.5}px`,
-                  backgroundColor: i % 3 === 0 ? '#E63946' : i % 3 === 1 ? '#F4A261' : '#FFD700',
+                  left: ember.left,
+                  top: ember.top,
+                  width: `${ember.size}px`,
+                  height: `${ember.size}px`,
+                  backgroundColor: ember.color,
                 }}
                 animate={{
-                  y: [0, -50 - Math.random() * 70],
-                  x: [0, (Math.random() - 0.5) * 60],
+                  y: [0, ember.yDist],
+                  x: [0, ember.xDist],
                   opacity: [0.9, 0],
                   scale: [1, 0.1],
                 }}
                 transition={{
-                  duration: 2 + Math.random() * 2,
+                  duration: ember.duration,
                   repeat: Infinity,
-                  delay: Math.random() * 3,
+                  delay: ember.delay,
                   ease: "easeOut",
                 }}
               />
@@ -287,9 +300,8 @@ export function FornoShowcase() {
             className="relative z-20"
           >
             <motion.div
-              style={{ rotate: handleBreath }}
+              style={{ rotate: handleBreath, width: '280px', aspectRatio: '420 / 680' }}
               className="relative"
-              style={{ width: '280px', aspectRatio: '420 / 680' }}
             >
               {/* Peel SVG */}
               <PizzaPeelSVG className="w-full h-full drop-shadow-[0_12px_35px_rgba(74,40,17,0.5)]" />

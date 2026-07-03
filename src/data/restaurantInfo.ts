@@ -10,8 +10,8 @@ export const restaurantInfo = {
   openingHours: "Terça a Domingo: 18h00 às 23h30",
   googleMapsUrl: "https://maps.google.com/?q=Pizzaria+3+Irmaos",
   socialLinks: {
-    instagram: "https://instagram.com/pizzaria3irmaos",
-    facebook: "https://facebook.com/pizzaria3irmaos",
+    instagram: "https://instagram.com/pizza3irmaos_",
+    facebook: "https://facebook.com/pizzaria3irmaos3f",
     whatsapp: "https://wa.me/5517998765432",
   },
   stats: [
