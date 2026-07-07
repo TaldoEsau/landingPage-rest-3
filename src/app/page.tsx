@@ -2,6 +2,7 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { PizzaExplode } from "@/components/sections/PizzaExplode";
 import { FornoShowcase } from "@/components/sections/FornoShowcase";
 import { Diferenciais } from "@/components/sections/Diferenciais";
 import { GaleriaAmbiente } from "@/components/sections/GaleriaAmbiente";
@@ -18,6 +19,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="flex-grow">
         <Hero />
+        <PizzaExplode />
         <FornoShowcase />
         <Diferenciais />
         <GaleriaAmbiente />
