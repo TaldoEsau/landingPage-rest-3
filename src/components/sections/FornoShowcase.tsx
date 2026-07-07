@@ -26,9 +26,9 @@ export function FornoShowcase() {
   });
 
   const smooth = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 30,
-    mass: 0.5,
+    stiffness: 40,
+    damping: 24,
+    mass: 0.6,
   });
 
   // Dynamic Horizontal Translation for the Canvas Container (slides left, right, center)
@@ -101,25 +101,39 @@ export function FornoShowcase() {
     });
   }, []);
 
-  // Draw frame based on scroll position
+  // Draw frame based on scroll position with cross-fade interpolation
   const drawFrame = useCallback((progress: number) => {
     const canvas = canvasRef.current;
     const images = imagesRef.current;
     if (!canvas || images.length === 0) return;
 
-    const frameIndex = Math.min(
-      Math.floor(progress * (TOTAL_FRAMES - 1)),
-      TOTAL_FRAMES - 1
-    );
-
-    if (frameIndex === currentFrameRef.current) return;
-    currentFrameRef.current = frameIndex;
+    const exactFrame = progress * (TOTAL_FRAMES - 1);
+    const frameIndex1 = Math.floor(exactFrame);
+    const frameIndex2 = Math.min(frameIndex1 + 1, TOTAL_FRAMES - 1);
+    const fraction = exactFrame - frameIndex1;
 
     const ctx = canvas.getContext("2d", { willReadFrequently: false });
-    if (!ctx || !images[frameIndex]) return;
+    if (!ctx) return;
+
+    const img1 = images[frameIndex1];
+    const img2 = images[frameIndex2];
+
+    if (!img1) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(images[frameIndex], 0, 0);
+
+    // Draw the current base frame
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(img1, 0, 0);
+
+    // Draw the next frame on top with fractional opacity (cross-fade blend)
+    if (img2 && fraction > 0.005) {
+      ctx.globalAlpha = fraction;
+      ctx.drawImage(img2, 0, 0);
+    }
+
+    // Reset alpha
+    ctx.globalAlpha = 1.0;
   }, []);
 
   // Subscribe to smooth scroll value
