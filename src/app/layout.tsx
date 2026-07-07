@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -9,37 +9,37 @@ const playfair = Playfair_Display({
   weight: ["400", "600", "700", "800", "900"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Pizzaria 3 Irmãos | A Verdadeira Tradição da Pizza Artesanal",
+  title: "Dama Pizzaria | Elegância e Sabor em Santa Fé do Sul",
   description:
-    "Pizzaria 3 Irmãos - Pizzas artesanais assadas no forno a lenha, massa de fermentação natural e ingredientes frescos. Faça seu pedido com entrega rápida em até 30 minutos!",
+    "Dama Pizzaria — Um espaço único onde a elegância encontra o sabor. Ambiente sofisticado, gastronomia artesanal com forno a lenha e momentos inesquecíveis em Santa Fé do Sul.",
   keywords: [
-    "Pizzaria 3 Irmãos",
+    "Dama Pizzaria",
+    "Pizzaria Santa Fé do Sul",
+    "Restaurante sofisticado",
     "Pizza artesanal",
     "Forno a lenha",
-    "Delivery de pizza",
-    "Pizza de fermentação natural",
-    "Cardápio Pizzaria 3 Irmãos",
+    "Ambiente elegante",
   ],
   openGraph: {
-    title: "Pizzaria 3 Irmãos | Sabor que Une a Família",
+    title: "Dama Pizzaria | Onde a Elegância Encontra o Sabor",
     description:
-      "Ingredientes selecionados, massa artesanal assada no forno a lenha e entrega rápida. Peça já!",
+      "Descubra um espaço pensado para proporcionar momentos únicos. Gastronomia artesanal e ambiente sofisticado.",
     type: "website",
     locale: "pt_BR",
     images: [
       {
-        url: "/images/pizza.png",
+        url: "/images/newImages/damapizzaria•Seguir - 1080w.jpg",
         width: 1200,
         height: 630,
-        alt: "Pizzaria 3 Irmãos Pizza Destaque",
+        alt: "Dama Pizzaria — Ambiente Sofisticado",
       },
     ],
   },
@@ -51,8 +51,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${playfair.variable} ${inter.variable}`}>
-      <body className="antialiased bg-[#FFFDF9] text-[#1D3557] selection:bg-[#E63946] selection:text-white">
+    <html lang="pt-BR" className={`${playfair.variable} ${cormorant.variable}`}>
+      <body className="antialiased bg-black text-white">
         {children}
       </body>
     </html>

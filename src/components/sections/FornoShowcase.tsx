@@ -1,416 +1,294 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { restaurantInfo } from "@/data/restaurantInfo";
-import { Flame, Sparkles, ShoppingBag, Thermometer, Clock, ChevronDown } from "lucide-react";
+import { ChevronDown, ArrowRight } from "lucide-react";
 
-function PizzaPeelSVG({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="-10 -60 420 680"
-      className={className}
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <defs>
-        <path
-          id="peel"
-          d="
-            M 50 100
-            A 150 150 0 1 1 350 100
-            C 350 220, 215 250, 215 310
-            L 215 580
-            A 15 15 0 0 1 185 580
-            L 185 310
-            C 185 250, 50 220, 50 100 Z"
-        />
-        <clipPath id="peel-clip">
-          <use href="#peel" />
-        </clipPath>
-        <linearGradient id="darkWood" x1="10%" y1="0%" x2="90%" y2="100%">
-          <stop offset="0%" stopColor="#804a25" />
-          <stop offset="50%" stopColor="#693c1d" />
-          <stop offset="100%" stopColor="#4a2811" />
-        </linearGradient>
-        <linearGradient id="lightWood" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#e8ceaa" />
-          <stop offset="40%" stopColor="#f5dfc1" />
-          <stop offset="100%" stopColor="#d4b48c" />
-        </linearGradient>
-        <mask id="hole-mask">
-          <rect x="-10" y="-60" width="420" height="680" fill="white" />
-          <circle cx="200" cy="565" r="6" fill="black" />
-        </mask>
-      </defs>
-      <use href="#peel" fill="#2b1507" transform="translate(4, 5)" />
-      <g mask="url(#hole-mask)">
-        <use href="#peel" fill="url(#darkWood)" />
-        <rect
-          x="175" y="-60" width="50" height="740"
-          fill="url(#lightWood)"
-          clipPath="url(#peel-clip)"
-        />
-        <use href="#peel" fill="none" stroke="#945931" strokeWidth="2" />
-        <use
-          href="#peel"
-          fill="none"
-          stroke="#361a09"
-          strokeWidth="4"
-          clipPath="url(#peel-clip)"
-          transform="translate(2, 2)"
-          opacity="0.6"
-        />
-      </g>
-    </svg>
-  );
+const TOTAL_FRAMES = 100;
+const FRAME_PATH = "/images/newImages/frames/quero_que_faca_um_video_com_es_";
+
+function getFrameSrc(index: number): string {
+  const padded = String(index).padStart(3, "0");
+  return `${FRAME_PATH}${padded}.jpg`;
 }
 
 export function FornoShowcase() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const currentFrameRef = useRef(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  // Tuned spring for high-refresh 60fps mobile scroll without physics lag
   const smooth = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 28,
-    mass: 0.4,
+    stiffness: 80,
+    damping: 30,
+    mass: 0.5,
   });
 
-  // === OVEN & FIRE ===
-  const ovenOpacity = useTransform(smooth, [0, 0.08, 0.90, 1], [0.3, 1, 1, 0.5]);
-  const fireGlowScale = useTransform(smooth, [0, 0.2, 0.45, 0.7, 1], [0.5, 0.9, 1.2, 1.0, 0.7]);
-  const fireGlowOpacity = useTransform(smooth, [0, 0.2, 0.45, 0.7, 1], [0.2, 0.5, 0.9, 0.6, 0.3]);
-  const fireIntensity = useTransform(smooth, [0, 0.25, 0.5, 0.75, 1], [0.3, 0.6, 1, 0.8, 0.4]);
-
-  // === PEEL + PIZZA MOVEMENT ===
-  const peelX = useTransform(
+  // Dynamic Horizontal Translation for the Canvas Container (slides left, right, center)
+  // X values are in percentages of translation
+  const canvasX = useTransform(
     smooth,
-    [0, 0.06, 0.14, 0.22, 0.28, 0.45, 0.62, 0.72, 0.82, 0.92, 1],
-    [-320, -250, -160, -60, 0, 4, 0, -4, 0, 4, 0]
-  );
-  const peelY = useTransform(
-    smooth,
-    [0, 0.06, 0.14, 0.22, 0.28, 0.45, 0.62, 0.72, 0.82, 0.92, 1],
-    [90, 60, 25, 0, -12, -18, -8, 8, 30, 45, 55]
-  );
-  const peelTilt = useTransform(
-    smooth,
-    [0, 0.10, 0.20, 0.28, 0.45, 0.62, 0.72, 0.85, 1],
-    [-16, -10, -4, 0, 1, -1, 2, 1, 0]
-  );
-  const overallScale = useTransform(
-    smooth,
-    [0, 0.10, 0.20, 0.28, 0.45, 0.62, 0.75, 0.88, 1],
-    [0.35, 0.45, 0.58, 0.68, 0.75, 0.85, 1.05, 1.18, 1.22]
+    [0, 0.1, 0.32, 0.42, 0.65, 0.75, 0.95, 1],
+    ["-25%", "-25%", "-25%", "25%", "25%", "0%", "0%", "0%"]
   );
 
-  const handleBreath = useTransform(
+  // Responsive values (mobile vs desktop) for X transform can be handled via CSS or responsive classes.
+  // We'll use translateX transform mapped to scroll. To make it mobile-friendly, we can reduce the translation on small screens.
+  const canvasScale = useTransform(
     smooth,
-    [0, 0.28, 0.45, 0.62, 0.80, 1],
-    [0, 0, 1.2, 0, -1, 0]
+    [0, 0.1, 0.65, 0.75, 0.95, 1],
+    [0.85, 0.9, 0.9, 1.05, 1.05, 0.9]
   );
 
-  const pizzaGoldenGlow = useTransform(
+  const canvasOpacity = useTransform(
     smooth,
-    [0, 0.20, 0.40, 0.62, 0.80, 1],
-    [0, 0.1, 0.5, 1, 0.7, 0.4]
+    [0, 0.05, 0.95, 1],
+    [0.5, 1, 1, 0]
   );
 
-  const smokeOpacity = useTransform(smooth, [0.40, 0.60, 0.80, 1], [0, 0.5, 0.6, 0.2]);
-  const embersOpacity = useTransform(smooth, [0.12, 0.30, 0.65, 0.82], [0, 1, 1, 0]);
-  const scrollHintOpacity = useTransform(smooth, [0, 0.08], [1, 0]);
+  // Text overlays that appear at specific scroll points with side slide-ins
+  const text1Opacity = useTransform(smooth, [0.05, 0.12, 0.28, 0.34], [0, 1, 1, 0]);
+  const text1X = useTransform(smooth, [0.05, 0.12, 0.28, 0.34], [50, 0, 0, -50]);
 
-  // === INFO CARDS ===
-  const info1Opacity = useTransform(smooth, [0.05, 0.16, 0.30, 0.38], [0, 1, 1, 0]);
-  const info1Y = useTransform(smooth, [0.05, 0.16], [40, 0]);
+  const text2Opacity = useTransform(smooth, [0.38, 0.45, 0.60, 0.67], [0, 1, 1, 0]);
+  const text2X = useTransform(smooth, [0.38, 0.45, 0.60, 0.67], [-50, 0, 0, 50]);
 
-  const info2Opacity = useTransform(smooth, [0.32, 0.48, 0.64, 0.72], [0, 1, 1, 0]);
-  const info2Y = useTransform(smooth, [0.32, 0.48], [40, 0]);
+  const text3Opacity = useTransform(smooth, [0.72, 0.79, 0.95, 1], [0, 1, 1, 0]);
+  const text3Y = useTransform(smooth, [0.72, 0.79, 0.95, 1], [30, 0, 0, -30]);
 
-  const info3Opacity = useTransform(smooth, [0.76, 0.90], [0, 1]);
-  const info3Y = useTransform(smooth, [0.76, 0.90], [40, 0]);
+  const scrollHintOpacity = useTransform(smooth, [0, 0.06], [1, 0]);
+
+  // Preload all frames
+  useEffect(() => {
+    let loaded = 0;
+    const images: HTMLImageElement[] = [];
+
+    const promises = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
+      return new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.src = getFrameSrc(i);
+        img.onload = () => {
+          loaded++;
+          setLoadProgress(Math.floor((loaded / TOTAL_FRAMES) * 100));
+          resolve(img);
+        };
+        img.onerror = reject;
+      });
+    });
+
+    Promise.all(promises).then((loadedImages) => {
+      images.push(...loadedImages);
+      imagesRef.current = images;
+      setImagesLoaded(true);
+
+      // Draw first frame immediately
+      const canvas = canvasRef.current;
+      if (canvas && images[0]) {
+        const ctx = canvas.getContext("2d", { willReadFrequently: false });
+        if (ctx) {
+          canvas.width = images[0].naturalWidth;
+          canvas.height = images[0].naturalHeight;
+          ctx.drawImage(images[0], 0, 0);
+        }
+      }
+    });
+  }, []);
+
+  // Draw frame based on scroll position
+  const drawFrame = useCallback((progress: number) => {
+    const canvas = canvasRef.current;
+    const images = imagesRef.current;
+    if (!canvas || images.length === 0) return;
+
+    const frameIndex = Math.min(
+      Math.floor(progress * (TOTAL_FRAMES - 1)),
+      TOTAL_FRAMES - 1
+    );
+
+    if (frameIndex === currentFrameRef.current) return;
+    currentFrameRef.current = frameIndex;
+
+    const ctx = canvas.getContext("2d", { willReadFrequently: false });
+    if (!ctx || !images[frameIndex]) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(images[frameIndex], 0, 0);
+  }, []);
+
+  // Subscribe to smooth scroll value
+  useEffect(() => {
+    const unsubscribe = smooth.on("change", (latest) => {
+      requestAnimationFrame(() => drawFrame(latest));
+    });
+    return unsubscribe;
+  }, [smooth, drawFrame]);
+
+  // Handle canvas resize
+  useEffect(() => {
+    const handleResize = () => {
+      const canvas = canvasRef.current;
+      const images = imagesRef.current;
+      if (!canvas || images.length === 0 || !images[0]) return;
+      canvas.width = images[0].naturalWidth;
+      canvas.height = images[0].naturalHeight;
+      drawFrame(smooth.get());
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [imagesLoaded, smooth, drawFrame]);
 
   return (
     <section
       ref={containerRef}
-      id="forno-showcase"
-      className="relative h-[280vh] sm:h-[300vh] bg-[#0A0A0E] text-white selection:bg-[#E63946] selection:text-white"
+      id="experiencia"
+      className="relative h-[500vh] bg-black"
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center justify-center px-6 sm:px-12">
 
-        {/* Header */}
-        <div className="relative z-20 text-center max-w-3xl mx-auto">
-          <motion.div style={{ opacity: ovenOpacity }} className="transform-gpu">
-            <span className="inline-flex items-center gap-2 bg-[#E63946]/15 border border-[#E63946]/30 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-[#E63946] mb-2 sm:mb-3">
-              <Flame className="w-3.5 h-3.5 fill-[#E63946]" />
-              <span>Forno a Lenha Artesanal</span>
+        {/* Loading indicator */}
+        {!imagesLoaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-30">
+            <span className="text-[10px] uppercase tracking-[0.4em] text-[#C9A96E] font-medium mb-4">
+              Carregando experiência
             </span>
-            <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              Da Pá Para o Forno.<br className="hidden sm:block" /> Do Forno Para Sua Mesa.
-            </h2>
-            <p className="mt-2 text-xs sm:text-sm text-gray-400 font-medium">
-              Acompanhe a pizza sendo assada no forno a lenha a 450ºC
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Central Animation Stage */}
-        <div className="relative w-full max-w-5xl mx-auto h-[400px] sm:h-[520px] flex items-center justify-center z-10">
-
-          {/* ===== REALISTIC OVEN (Hardware Accelerated) ===== */}
-          <div className="absolute inset-x-[4%] inset-y-0 pointer-events-none transform-gpu">
-            <div className="relative w-full h-full">
-              <div className="absolute inset-0 rounded-t-[45%] bg-gradient-to-b from-[#3D2212] via-[#2A1608] to-[#1A0D04] border border-[#5C3A1E]/40 shadow-lg">
-                {[15, 35, 55, 75].map((top, i) => (
-                  <div
-                    key={i}
-                    className="absolute left-[8%] right-[8%] h-[1px] bg-[#5C3A1E]/20"
-                    style={{ top: `${top}%` }}
-                  />
-                ))}
-              </div>
-
-              <motion.div
-                style={{ opacity: fireIntensity }}
-                className="absolute inset-[8%] sm:inset-[10%] rounded-t-[48%] bg-gradient-to-b from-[#1A0505] via-[#0D0202] to-[#0A0A0E] shadow-inner transform-gpu"
-              >
-                <div className="absolute bottom-[6%] left-[12%] right-[12%] h-[25%]">
-                  <motion.div
-                    style={{ opacity: fireIntensity }}
-                    className="absolute inset-0 rounded-[50%] bg-gradient-to-t from-[#E63946]/35 via-[#F4A261]/15 to-transparent blur-md"
-                  />
-                  {[20, 45, 75].map((left, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute bottom-0"
-                      style={{ left: `${left}%` }}
-                    >
-                      <motion.div
-                        className="w-3 bg-gradient-to-t from-[#E63946] via-[#F4A261] to-transparent rounded-t-full"
-                        animate={{
-                          height: [10 + i * 2, 20 + i * 2, 12 + i * 2],
-                          opacity: [0.7, 1, 0.7],
-                        }}
-                        transition={{
-                          duration: 1.2 + i * 0.2,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+            <div className="w-48 h-[2px] bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#C9A96E] transition-all duration-300"
+                style={{ width: `${loadProgress}%` }}
+              />
             </div>
+            <span className="text-[10px] text-white/30 mt-2 tracking-wider">
+              {loadProgress}%
+            </span>
           </div>
+        )}
 
-          {/* Background Fire Glow (Lightweight Blur for Mobile GPU) */}
-          <motion.div
-            style={{ scale: fireGlowScale, opacity: fireGlowOpacity }}
-            className="absolute w-[320px] h-[320px] sm:w-[480px] sm:h-[480px] rounded-full bg-[radial-gradient(circle,rgba(230,57,70,0.4)_0%,rgba(244,162,97,0.15)_40%,transparent_70%)] blur-2xl pointer-events-none transform-gpu"
-          />
+        {/* Interactive layout stage */}
+        <div className="relative w-full max-w-6xl mx-auto h-[600px] flex items-center justify-center">
 
-          {/* Animated Ember Particles (Optimized for Mobile) */}
-          <motion.div style={{ opacity: embersOpacity }} className="absolute inset-0 pointer-events-none z-10 transform-gpu">
-            {[
-              { left: "30%", top: "35%", size: 3, color: "#E63946", yDist: -60, xDist: 10, duration: 2.2, delay: 0.1 },
-              { left: "45%", top: "52%", size: 2, color: "#F4A261", yDist: -80, xDist: -15, duration: 2.8, delay: 0.5 },
-              { left: "62%", top: "40%", size: 3, color: "#FFD700", yDist: -55, xDist: 20, duration: 2.0, delay: 0.3 },
-              { left: "38%", top: "58%", size: 2, color: "#E63946", yDist: -70, xDist: -10, duration: 2.5, delay: 0.9 },
-              { left: "55%", top: "30%", size: 3, color: "#F4A261", yDist: -90, xDist: 8, duration: 3.0, delay: 0.2 },
-              { left: "68%", top: "48%", size: 2, color: "#FFD700", yDist: -65, xDist: -20, duration: 2.4, delay: 1.1 },
-            ].map((ember, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full transform-gpu"
-                style={{
-                  left: ember.left,
-                  top: ember.top,
-                  width: `${ember.size}px`,
-                  height: `${ember.size}px`,
-                  backgroundColor: ember.color,
-                }}
-                animate={{
-                  y: [0, ember.yDist],
-                  x: [0, ember.xDist],
-                  opacity: [0.85, 0],
-                  scale: [1, 0.2],
-                }}
-                transition={{
-                  duration: ember.duration,
-                  repeat: Infinity,
-                  delay: ember.delay,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </motion.div>
-
-          {/* Smoke/Steam (Hidden on small mobile for maximum smoothness) */}
-          <motion.div style={{ opacity: smokeOpacity }} className="hidden sm:block absolute top-[2%] left-1/2 -translate-x-1/2 pointer-events-none z-10 transform-gpu">
-            {[...Array(4)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-10 h-10 rounded-full bg-white/[0.04] blur-lg"
-                animate={{
-                  y: [0, -90 - i * 20],
-                  x: [0, (i % 2 === 0 ? 1 : -1) * (15 + i * 5)],
-                  opacity: [0.3, 0],
-                  scale: [0.5, 2.2],
-                }}
-                transition={{
-                  duration: 3.5 + i * 0.5,
-                  repeat: Infinity,
-                  delay: i * 0.6,
-                  ease: "easeOut",
-                }}
-              />
-            ))}
-          </motion.div>
-
-          {/* === PIZZA PEEL (SVG) + PIZZA === */}
+          {/* Canvas Container window — Arched capsules shape with gold border */}
           <motion.div
             style={{
-              x: peelX,
-              y: peelY,
-              scale: overallScale,
-              rotate: peelTilt,
+              x: canvasX,
+              scale: canvasScale,
+              opacity: canvasOpacity,
             }}
-            className="relative z-20 transform-gpu will-change-transform"
+            className="absolute w-[280px] sm:w-[320px] md:w-[380px] aspect-[3/4] border border-[#C9A96E]/20 bg-[#0A0A0A] overflow-hidden rounded-t-[140px] rounded-b-[20px] shadow-2xl flex items-center justify-center transform-gpu will-change-transform z-10"
           >
-            <motion.div
-              style={{ rotate: handleBreath, width: '260px', aspectRatio: '420 / 680' }}
-              className="relative sm:w-[280px]"
-            >
-              {/* Peel SVG */}
-              <PizzaPeelSVG className="w-full h-full drop-shadow-md" />
+            {/* Elegant vignette inner overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none z-10" />
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full object-cover scale-[1.05]"
+            />
+          </motion.div>
 
-              <div
-                className="absolute"
-                style={{
-                  top: '23.5%',
-                  left: '50%',
-                  width: '90%',
-                  height: '55%',
-                  transform: 'translate(-50%, -50%)',
-                }}
-              >
-                {/* Baking glow ring */}
-                <motion.div
-                  style={{ opacity: pizzaGoldenGlow }}
-                  className="absolute inset-[-15%] rounded-full bg-[radial-gradient(circle,rgba(255,215,0,0.3)_0%,rgba(244,162,97,0.1)_40%,transparent_70%)] blur-sm"
-                />
+          {/* --- Opposing Text Overlays --- */}
 
-                <div className="relative w-full h-full">
-                  <Image
-                    src="/images/transparent/pizza-oven.png"
-                    alt="Pizza Assando no Forno a Lenha"
-                    fill
-                    className="object-contain drop-shadow-lg"
-                    priority
-                  />
-                </div>
+          {/* Phase 1: Left-aligned Canvas, Right-aligned Text */}
+          <motion.div
+            style={{ opacity: text1Opacity, x: text1X }}
+            className="absolute right-0 w-full md:w-[45%] text-left hidden md:block z-20 pointer-events-none transform-gpu"
+          >
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-[#C9A96E] font-medium block mb-4">
+              O Conceito
+            </span>
+            <h2 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-wide mb-6 leading-tight">
+              A Essência da Elegância
+            </h2>
+            <p className="text-sm sm:text-base text-white/45 font-light leading-[1.8] mb-8">
+              A silhueta clássica em movimento expressa a nossa busca pela harmonia e precisão. Na Dama Pizzaria, cada gesto é planejado para criar momentos de pura sofisticação.
+            </p>
+            <div className="flex items-center gap-3 text-[#C9A96E] text-xs font-semibold uppercase tracking-[0.2em]">
+              <span>Explore o espaço</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </motion.div>
 
-                {/* Temperature Badge */}
-                <motion.div
-                  style={{ opacity: pizzaGoldenGlow }}
-                  className="absolute -top-1 -right-1 z-20 bg-[#E63946] text-white text-[9px] sm:text-[10px] font-extrabold px-2.5 py-0.5 sm:py-1 rounded-full shadow-md flex items-center gap-1"
-                >
-                  <Thermometer className="w-3 h-3" />
-                  <span>450ºC</span>
-                </motion.div>
-              </div>
+          {/* Phase 2: Right-aligned Canvas, Left-aligned Text */}
+          <motion.div
+            style={{ opacity: text2Opacity, x: text2X }}
+            className="absolute left-0 w-full md:w-[45%] text-left hidden md:block z-20 pointer-events-none transform-gpu"
+          >
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-[#C9A96E] font-medium block mb-4">
+              A Atmosfera
+            </span>
+            <h2 className="font-serif text-4xl sm:text-5xl font-bold text-white tracking-wide mb-6 leading-tight">
+              Estilo e Detalhe Singular
+            </h2>
+            <p className="text-sm sm:text-base text-white/45 font-light leading-[1.8] mb-8">
+              Dos contrastes marcantes da nossa decoração à suavidade de cada textura, o salão da Dama convida à contemplação e ao conforto completo de uma experiência gastronômica autoral.
+            </p>
+            <div className="flex items-center gap-3 text-[#C9A96E] text-xs font-semibold uppercase tracking-[0.2em]">
+              <span>Sinta a tradição</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
+          </motion.div>
+
+          {/* Phase 3: Centered text overlay at the end */}
+          <motion.div
+            style={{ opacity: text3Opacity, y: text3Y }}
+            className="absolute text-center max-w-xl z-20 pointer-events-none transform-gpu"
+          >
+            <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-[#C9A96E] font-medium block mb-4">
+              A Experiência
+            </span>
+            <h2 className="font-serif text-4xl sm:text-6xl font-bold text-white tracking-wide mb-6">
+              Sabor e Arte
+            </h2>
+            <p className="text-sm sm:text-base text-white/45 font-light leading-[1.8] mx-auto max-w-md">
+              A combinação perfeita entre um design inspirador e a tradicional massa assada lentamente no forno a lenha.
+            </p>
+          </motion.div>
+
+          {/* --- Mobile Only Text Overlay (Centered fallback for small viewports) --- */}
+          <div className="absolute inset-x-0 bottom-4 text-center md:hidden pointer-events-none px-4 z-20">
+            <motion.div style={{ opacity: text1Opacity }} className="absolute inset-x-0 bottom-0">
+              <h3 className="font-serif text-2xl font-bold text-white mb-2">A Essência da Elegância</h3>
+              <p className="text-xs text-white/40 font-light">A busca constante pela precisão e harmonia.</p>
             </motion.div>
-          </motion.div>
+            <motion.div style={{ opacity: text2Opacity }} className="absolute inset-x-0 bottom-0">
+              <h3 className="font-serif text-2xl font-bold text-white mb-2">Atmosfera Singular</h3>
+              <p className="text-xs text-white/40 font-light">Contraste marcante e iluminação intimista.</p>
+            </motion.div>
+            <motion.div style={{ opacity: text3Opacity }} className="absolute inset-x-0 bottom-0">
+              <h3 className="font-serif text-2xl font-bold text-white mb-2">Sabor e Arte</h3>
+              <p className="text-xs text-white/40 font-light">A tradicional massa assada no forno a lenha.</p>
+            </motion.div>
+          </div>
 
-          {/* INFO CARD 1 */}
-          <motion.div
-            style={{ opacity: info1Opacity, y: info1Y }}
-            className="absolute left-2 sm:left-6 lg:left-10 top-[20%] sm:top-[22%] bg-[#12121a]/95 backdrop-blur-md p-3.5 sm:p-5 rounded-2xl border border-[#F4A261]/30 shadow-xl max-w-[180px] sm:max-w-[220px] z-30 transform-gpu"
-          >
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#F4A261]/15 flex items-center justify-center text-[#F4A261]">
-                <Clock className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-extrabold text-[#F4A261] uppercase tracking-wider">
-                Maturação 48h
-              </span>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-gray-300 leading-relaxed">
-              Massa de fermentação natural descansada por 48 horas. Leveza e borda aerada.
-            </p>
-          </motion.div>
-
-          {/* INFO CARD 2 */}
-          <motion.div
-            style={{ opacity: info2Opacity, y: info2Y }}
-            className="absolute right-2 sm:right-6 lg:right-10 top-[20%] sm:top-[22%] bg-[#12121a]/95 backdrop-blur-md p-3.5 sm:p-5 rounded-2xl border border-[#E63946]/30 shadow-xl max-w-[180px] sm:max-w-[220px] z-30 text-right transform-gpu"
-          >
-            <div className="flex items-center gap-2 justify-end mb-1.5">
-              <span className="text-[10px] sm:text-[11px] font-extrabold text-[#E63946] uppercase tracking-wider">
-                Forno a 450ºC
-              </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#E63946]/15 flex items-center justify-center text-[#E63946]">
-                <Flame className="w-3.5 h-3.5 fill-current" />
-              </div>
-            </div>
-            <p className="text-[10px] sm:text-[11px] text-gray-300 leading-relaxed">
-              Calor da lenha derrete o queijo e doura a massa em apenas 90 segundos.
-            </p>
-          </motion.div>
-
-          {/* INFO CARD 3 - Final CTA */}
-          <motion.div
-            style={{ opacity: info3Opacity, y: info3Y }}
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#14233c]/95 backdrop-blur-md p-4 sm:p-6 rounded-2xl border border-[#F4A261]/30 shadow-2xl max-w-sm w-[92%] z-40 text-center transform-gpu"
-          >
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F4A261] uppercase tracking-wider mb-1.5">
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
-              <span>Pizza Pronta!</span>
-            </div>
-            <h4 className="font-serif text-sm sm:text-lg font-bold text-white mb-2.5">
-              Quentinha na Sua Porta
-            </h4>
-            <a
-              href={restaurantInfo.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#E63946] text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md hover:bg-[#d62839] transition-all hover:scale-105"
-            >
-              <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Peça no WhatsApp</span>
-            </a>
-          </motion.div>
         </div>
 
-        {/* Scroll Progress + Hint */}
-        <div className="relative z-20 max-w-xs sm:max-w-sm mx-auto w-full text-center">
+        {/* Scroll hint */}
+        <motion.div
+          style={{ opacity: scrollHintOpacity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-20"
+        >
+          <span className="text-[9px] uppercase tracking-[0.4em] text-white/30 font-medium">
+            Role para animar
+          </span>
           <motion.div
-            style={{ opacity: scrollHintOpacity }}
-            className="flex flex-col items-center gap-1 mb-2"
+            animate={{ y: [0, 5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
-              Role para ver o forno em ação
-            </span>
-            <motion.div
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <ChevronDown className="w-4 h-4 text-[#F4A261]" />
-            </motion.div>
+            <ChevronDown className="w-4 h-4 text-[#C9A96E]/40" />
           </motion.div>
-          <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              style={{ scaleX: smooth }}
-              className="h-full bg-gradient-to-r from-[#E63946] via-[#F4A261] to-[#FFD700] origin-left"
-            />
-          </div>
+        </motion.div>
+
+        {/* Scroll progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/5 z-20">
+          <motion.div
+            style={{ scaleX: smooth }}
+            className="h-full bg-gradient-to-r from-[#C9A96E]/50 to-[#C9A96E] origin-left"
+          />
         </div>
       </div>
     </section>

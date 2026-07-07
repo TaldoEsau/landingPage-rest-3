@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Reveal } from "@/components/ui/Reveal";
 import { ReviewAvatar } from "@/components/ui/ReviewAvatar";
 import { GooglePlaceDetails, GoogleReview } from "@/types/landing";
@@ -63,47 +63,52 @@ export function AvaliacoesGoogle() {
   }, [reviewsList]);
 
   return (
-    <section id="avaliacoes" className="py-20 sm:py-28 bg-gradient-to-b from-[#FFFDF9] via-[#FFF8F0] to-[#FFFDF9] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+    <section id="avaliacoes" className="py-24 sm:py-32 bg-black relative overflow-hidden">
+      
+      {/* Subtle decorative line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-16 bg-gradient-to-b from-[#C9A96E]/20 to-transparent" />
+
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 mb-16">
         <Reveal>
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div>
-              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#2A9D8F] bg-[#2A9D8F]/10 px-4 py-1.5 rounded-full mb-3 border border-[#2A9D8F]/20">
-                Google Meu Negócio
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.5em] text-[#C9A96E] font-medium block mb-4">
+                Opiniões
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1D3557]">
-                O Que Dizem Nossos Clientes
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-wide">
+                A Experiência Pelos Olhos de Nossos Clientes
               </h2>
-              <p className="mt-2 text-sm text-[#1D3557]/70">
-                Depoimentos reais de quem já comprovou o sabor único da Pizzaria 3 Irmãos.
+              <div className="w-16 h-[1px] bg-gradient-to-r from-[#C9A96E]/40 to-transparent my-5" />
+              <p className="text-sm sm:text-base text-white/40 font-light leading-relaxed max-w-xl">
+                Depoimentos reais sobre o nosso espaço, gastronomia e momentos vividos na Dama Pizzaria.
               </p>
             </div>
 
             {/* Google Rating Aggregate Card */}
-            <div className="flex items-center gap-5 bg-white p-4 sm:p-5 rounded-2xl border border-[#F4A261]/30 shadow-sm shrink-0">
+            <div className="flex items-center gap-6 bg-[#0A0A0A] p-5 sm:p-6 border border-white/[0.06] shadow-xl shrink-0">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-serif text-3xl font-extrabold text-[#E63946]">
+                  <span className="font-serif text-3xl font-bold text-white">
                     {data ? data.rating.toFixed(1).replace(".", ",") : "4,9"}
                   </span>
-                  <div className="flex text-[#F4A261] text-sm">
-                    <Star className="w-4 h-4 fill-[#F4A261]" />
-                    <Star className="w-4 h-4 fill-[#F4A261]" />
-                    <Star className="w-4 h-4 fill-[#F4A261]" />
-                    <Star className="w-4 h-4 fill-[#F4A261]" />
-                    <Star className="w-4 h-4 fill-[#F4A261]" />
+                  <div className="flex text-[#C9A96E]">
+                    <Star className="w-4 h-4 fill-[#C9A96E]" />
+                    <Star className="w-4 h-4 fill-[#C9A96E]" />
+                    <Star className="w-4 h-4 fill-[#C9A96E]" />
+                    <Star className="w-4 h-4 fill-[#C9A96E]" />
+                    <Star className="w-4 h-4 fill-[#C9A96E]" />
                   </div>
                 </div>
-                <p className="text-xs text-[#1D3557]/70 font-medium mt-0.5">
-                  {data?.user_ratings_total || 742} avaliações verificadas
+                <p className="text-[11px] uppercase tracking-[0.1em] text-white/40 mt-1.5">
+                  {data?.user_ratings_total || 742} avaliações no Google
                 </p>
               </div>
 
               <a
-                href={data?.url || "https://maps.google.com/?q=Pizzaria+3+Irmaos"}
+                href={data?.url || "https://maps.google.com/?q=Dama+Pizzaria+Santa+Fe+do+Sul"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-[#1D3557] hover:bg-[#E63946] px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] font-semibold text-[#C9A96E] border border-[#C9A96E]/30 hover:bg-[#C9A96E] hover:text-black px-6 py-3.5 transition-all duration-500"
               >
                 <span>Avaliar</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -116,8 +121,8 @@ export function AvaliacoesGoogle() {
       {/* Marquee Carousel Container */}
       <div className="relative w-full overflow-hidden">
         {/* Side Gradients */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-16 sm:w-28 bg-gradient-to-r from-[#FFF8F0] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-16 sm:w-28 bg-gradient-to-l from-[#FFF8F0] to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-16 sm:w-32 bg-gradient-to-r from-black to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-16 sm:w-32 bg-gradient-to-l from-black to-transparent" />
 
         <div
           ref={scrollRef}
@@ -126,19 +131,25 @@ export function AvaliacoesGoogle() {
           {marqueeReviews.map((review: GoogleReview, idx: number) => (
             <div
               key={`${review.author_name}-${idx}`}
-              className="flex w-[300px] sm:w-[350px] shrink-0 flex-col justify-between rounded-3xl border border-[#F4A261]/25 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 hover:border-[#E63946]/40"
+              className="flex w-[300px] sm:w-[360px] shrink-0 flex-col justify-between border border-white/[0.06] bg-[#0A0A0A] p-7 hover:border-[#C9A96E]/20 transition-all duration-500 hover:-translate-y-1"
             >
               <div>
                 {/* Author Info */}
                 <div className="flex items-center gap-3">
                   <ReviewAvatar photoUrl={review.profile_photo_url} name={review.author_name} />
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate font-serif text-sm font-bold text-[#1D3557]">
+                    <h3 className="truncate font-serif text-sm font-semibold text-white tracking-wide">
                       {review.author_name}
                     </h3>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <div className="flex text-[#F4A261] text-xs">★★★★★</div>
-                      <span className="text-[11px] text-[#1D3557]/60">
+                      <div className="flex text-[#C9A96E] text-xs">
+                        <Star className="w-3 h-3 fill-[#C9A96E]" />
+                        <Star className="w-3 h-3 fill-[#C9A96E]" />
+                        <Star className="w-3 h-3 fill-[#C9A96E]" />
+                        <Star className="w-3 h-3 fill-[#C9A96E]" />
+                        <Star className="w-3 h-3 fill-[#C9A96E]" />
+                      </div>
+                      <span className="text-[10px] text-white/30 tracking-wider">
                         {review.relative_time_description}
                       </span>
                     </div>
@@ -146,21 +157,21 @@ export function AvaliacoesGoogle() {
                 </div>
 
                 {/* Review Text */}
-                <p className="mt-4 text-xs sm:text-sm leading-relaxed text-[#1D3557]/80 font-normal line-clamp-4 italic">
+                <p className="mt-5 text-xs sm:text-sm leading-relaxed text-white/50 font-light italic">
                   &ldquo;{review.text}&rdquo;
                 </p>
               </div>
 
               {/* Google Verified Footer */}
-              <div className="mt-5 flex items-center justify-between border-t border-[#F4A261]/15 pt-3.5 text-[11px] text-[#1D3557]/60 font-medium">
-                <span className="flex items-center gap-1.5 text-[#1D3557]">
+              <div className="mt-6 flex items-center justify-between border-t border-white/[0.06] pt-4 text-[10px] uppercase tracking-widest text-white/30">
+                <span className="flex items-center gap-1.5 font-medium">
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" />
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335" />
                   </svg>
-                  Avaliação Google
+                  Google Review
                 </span>
                 <span>{review.details || "Verificado"}</span>
               </div>

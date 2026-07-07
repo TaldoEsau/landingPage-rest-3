@@ -12,14 +12,14 @@ export function ReviewAvatar({ photoUrl, name }: ReviewAvatarProps) {
 
   if (!photoUrl || imgError) {
     return (
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#E63946]/30 bg-[#E63946]/10 font-serif text-sm font-bold text-[#E63946] shadow-sm">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#C9A96E]/30 bg-[#C9A96E]/5 font-serif text-sm font-bold text-[#C9A96E] shadow-sm">
         {name ? name.charAt(0).toUpperCase() : "G"}
       </div>
     );
   }
 
   return (
-    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#F4A261]/40 bg-white shadow-sm">
+    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full border border-[#C9A96E]/20 bg-black shadow-sm">
       <img
         src={photoUrl}
         alt={name}
