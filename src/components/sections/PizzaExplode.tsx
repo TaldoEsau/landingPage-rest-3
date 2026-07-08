@@ -1029,13 +1029,13 @@ export function PizzaExplode() {
             <div className="flex items-start gap-4 md:gap-6">
               <div className="hidden md:block w-[2px] h-32 bg-gradient-to-b from-[#C9A96E] to-transparent mt-2 flex-shrink-0" />
               <div>
-                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.6em] text-[#C9A96E]/80 font-medium block mb-3">
+                <span className="text-[9px] sm:text-[20px] uppercase tracking-[0.6em] text-[#e2ba6f] font-medium block mb-3">
                   {PHASES[1].label}
                 </span>
                 <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide mb-4 md:mb-6 leading-[1.1] whitespace-pre-line drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
                   {PHASES[1].title}
                 </h2>
-                <p className="text-sm sm:text-base text-white/50 font-light leading-relaxed max-w-md mb-6 md:mb-8">
+                <p className="text-sm sm:text-base text-white font-light leading-relaxed max-w-md mb-6 md:mb-8">
                   {PHASES[1].subtitle}
                 </p>
                 {/* Ingredient mini-cards */}
@@ -1068,13 +1068,13 @@ export function PizzaExplode() {
           <div className="w-[90vw] md:w-[42vw] lg:w-[38vw] pr-6 sm:pr-10 md:pr-16 lg:pr-20 text-right ml-auto">
             <div className="flex items-start gap-4 md:gap-6 justify-end">
               <div>
-                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.6em] text-[#C9A96E]/80 font-medium block mb-3">
+                <span className="text-[9px] sm:text-[20px] uppercase tracking-[0.6em] text-[#e2ba6f] font-medium block mb-3">
                   {PHASES[2].label}
                 </span>
                 <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-wide mb-4 md:mb-6 leading-[1.1] whitespace-pre-line drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
                   {PHASES[2].title}
                 </h2>
-                <p className="text-sm sm:text-base text-white/50 font-light leading-relaxed max-w-md ml-auto mb-6 md:mb-8">
+                <p className="text-sm sm:text-base text-white font-light leading-relaxed max-w-md ml-auto mb-6 md:mb-8">
                   {PHASES[2].subtitle}
                 </p>
                 {/* Quality badges */}
@@ -1108,13 +1108,13 @@ export function PizzaExplode() {
               <Star className="w-3 h-3 md:w-4 md:h-4 text-[#C9A96E]/60" />
               <div className="w-12 md:w-20 h-[1px] bg-gradient-to-l from-transparent to-[#C9A96E]/60" />
             </div>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.6em] text-[#C9A96E]/80 font-medium block mb-3 md:mb-4">
+            <span className="text-[9px] sm:text-[20px] uppercase tracking-[0.6em] text-[#e2ba6f] font-medium block mb-3">
               {PHASES[3].label}
             </span>
             <h2 className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white tracking-wide mb-4 md:mb-6 leading-[1.1] whitespace-pre-line drop-shadow-[0_4px_30px_rgba(0,0,0,0.8)]">
               {PHASES[3].title}
             </h2>
-            <p className="text-sm sm:text-base md:text-lg text-white/50 font-light leading-relaxed max-w-lg mx-auto mb-8 md:mb-10">
+            <p className="text-sm sm:text-base md:text-lg text-white font-light leading-relaxed max-w-lg mx-auto mb-8 md:mb-10">
               {PHASES[3].subtitle}
             </p>
             {/* CTA button */}
